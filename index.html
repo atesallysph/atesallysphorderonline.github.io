@@ -137,8 +137,8 @@ body{
   <div class="iab-card">
     <h2>⚠️ Open in Your Browser First</h2>
     <p class="subtitle">
-      You're inside <strong>Messenger's built-in browser</strong>, which blocks saving your order receipt to your phone.
-      Open this in <strong>Chrome</strong> or <strong>Safari</strong> to order properly.
+      You're inside <strong>Messenger's built-in browser</strong>, which blocks some features of this website.
+      Open this in <strong>Chrome</strong> or <strong>Safari</strong> to proceed with browsing the website.
     </p>
 
     <!-- iOS -->
@@ -201,13 +201,15 @@ body{
       // Hide iOS section, show Chrome intent button
       document.getElementById('iosInstructions').style.display = 'none';
       const intentUrl =
-        'intent://' +
-        window.location.host +
-        window.location.pathname.replace(/[^/]*$/, MENU_PAGE) +
-        '#Intent;scheme=https;package=com.android.chrome;end';
-      const btn = document.getElementById('chromeIntentBtn');
-      btn.href = intentUrl;
-      btn.style.display = 'flex';
+  'intent://' +
+  window.location.host +
+  window.location.pathname.replace(/[^/]*$/, MENU_PAGE) +
+  '#Intent;scheme=https;end';
+const btn = document.getElementById('chromeIntentBtn');
+btn.href = intentUrl;
+btn.style.display = 'flex';
+
+
     }
     // Unknown platform: show both instruction boxes, no intent button
   } else {
