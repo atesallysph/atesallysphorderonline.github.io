@@ -33,10 +33,42 @@ nav{background:var(--orange);padding:0 2rem;display:flex;align-items:center;just
 .hero p{color:rgba(253,246,237,.6);font-size:.95rem;max-width:360px;margin:0 auto 1.5rem}
 .hero-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .pill{background:rgba(253,246,237,.1);border:1px solid rgba(253,246,237,.2);color:rgba(253,246,237,.75);font-size:.75rem;padding:4px 12px;border-radius:20px;font-weight:600}
-.cat-bar{padding:1rem 2rem;background:var(--cream2);border-bottom:1px solid var(--border);display:flex;gap:8px;overflow-x:auto;position:sticky;top:64px;z-index:90}
+.cat-bar-wrap{position:sticky;top:64px;z-index:90;background:var(--cream2);border-bottom:1px solid var(--border)}
+.cat-bar{padding:1rem 2rem;display:flex;gap:8px;overflow-x:auto;position:relative;scroll-behavior:smooth}
 .cat-bar::-webkit-scrollbar{height:3px}
+.cat-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .cat-pill{background:var(--cream2);border:1px solid var(--border);color:var(--muted);font-family:var(--font);font-size:.82rem;font-weight:700;padding:7px 16px;border-radius:24px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
 .cat-pill.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.cat-bar-arrow{
+  position:absolute;top:0;bottom:0;width:56px;
+  display:flex;align-items:center;
+  pointer-events:none;
+  transition:opacity .25s;
+}
+.cat-bar-arrow.right{
+  right:0;justify-content:flex-end;padding-right:10px;
+  background:linear-gradient(to right,transparent,var(--cream2) 65%);
+}
+.cat-bar-arrow.left{
+  left:0;justify-content:flex-start;padding-left:10px;
+  background:linear-gradient(to left,transparent,var(--cream2) 65%);
+}
+.cat-bar-arrow-icon{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:700;cursor:pointer;
+  box-shadow:0 2px 8px rgba(217,64,64,.35);
+  pointer-events:all;
+  transition:transform .1s,background .15s;
+  flex-shrink:0;
+}
+.cat-bar-arrow-icon:hover{background:var(--orange-d)}
+.cat-bar-arrow-icon:active{transform:scale(.9)}
+.cat-bar-arrow.right .cat-bar-arrow-icon{animation:nudge-r 1.4s ease-in-out infinite}
+.cat-bar-arrow.left  .cat-bar-arrow-icon{animation:nudge-l 1.4s ease-in-out infinite}
+@keyframes nudge-r{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+@keyframes nudge-l{0%,100%{transform:translateX(0)}50%{transform:translateX(-3px)}}
 .main-wrap{max-width:1100px;margin:0 auto;padding:2rem}
 .section-heading{font-family:var(--display);font-size:1.5rem;color:var(--orange);margin-bottom:1.2rem;padding-bottom:.5rem;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px}
 .menu-section{margin-bottom:2.5rem}
@@ -239,13 +271,21 @@ input.err,textarea.err{border-color:#e03030}
   </div>
 </div>
 
-<div class="cat-bar">
-  <button class="cat-pill active" onclick="scrollSec('all',this)">🍽 All</button>
-  <button class="cat-pill" onclick="scrollSec('bicol',this)">🌶️ Bicol Meals</button>
-  <button class="cat-pill" onclick="scrollSec('bahay',this)">🧑🏻‍🍳 Lutong Bahay</button>
-  <button class="cat-pill" onclick="scrollSec('frozen',this)">❄️ Frozen Goods</button>
-  <button class="cat-pill" onclick="scrollSec('appet',this)">🫙 Appetizers</button>
-  <button class="cat-pill" onclick="scrollSec('merienda',this)">🍘 Merienda</button>
+<div class="cat-bar-wrap">
+  <div class="cat-bar" id="catBar">
+    <button class="cat-pill active" onclick="scrollSec('all',this)">🍽 All</button>
+    <button class="cat-pill" onclick="scrollSec('bicol',this)">🌶️ Bicol Meals</button>
+    <button class="cat-pill" onclick="scrollSec('bahay',this)">🧑🏻‍🍳 Lutong Bahay</button>
+    <button class="cat-pill" onclick="scrollSec('frozen',this)">❄️ Frozen Goods</button>
+    <button class="cat-pill" onclick="scrollSec('appet',this)">🫙 Appetizers</button>
+    <button class="cat-pill" onclick="scrollSec('merienda',this)">🍘 Merienda</button>
+  </div>
+  <div class="cat-bar-arrow left" id="catArrowLeft">
+    <div class="cat-bar-arrow-icon" onclick="scrollCatBar(-160)">‹</div>
+  </div>
+  <div class="cat-bar-arrow right" id="catArrowRight">
+    <div class="cat-bar-arrow-icon" onclick="scrollCatBar(160)">›</div>
+  </div>
 </div>
 
 <div class="main-wrap">
@@ -602,9 +642,31 @@ function scrollSec(cat,btn){
   if(cat==='all'){window.scrollTo({top:0,behavior:'smooth'});return;}
   const sec=document.getElementById('sec-'+cat);
   if(!sec)return;
-  const offset=document.querySelector('nav').offsetHeight+document.querySelector('.cat-bar').offsetHeight+12;
+  const offset=document.querySelector('nav').offsetHeight+document.querySelector('.cat-bar-wrap').offsetHeight+12;
   const top=sec.getBoundingClientRect().top+window.scrollY-offset;
   window.scrollTo({top,behavior:'smooth'});
+}
+
+// Cat-bar scroll arrows
+(function(){
+  const bar=document.getElementById('catBar');
+  const arrowL=document.getElementById('catArrowLeft');
+  const arrowR=document.getElementById('catArrowRight');
+
+  function updateArrows(){
+    const atStart=bar.scrollLeft<=4;
+    const atEnd=bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4;
+    arrowL.style.opacity=atStart?'0':'1';
+    arrowR.style.opacity=atEnd?'0':'1';
+  }
+
+  bar.addEventListener('scroll',updateArrows,{passive:true});
+  window.addEventListener('resize',updateArrows);
+  updateArrows();
+})();
+
+function scrollCatBar(amount){
+  document.getElementById('catBar').scrollBy({left:amount,behavior:'smooth'});
 }
 
 function openCheckout(){
